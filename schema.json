@@ -1,0 +1,38 @@
+{
+	"budget": {
+		"month": [
+			{
+				"categories": {
+					"housing": {
+						"budgeted": 123,
+						"out": 123,
+						"balance": 123
+					}
+				}
+			},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{}	
+		]
+	},
+	"transactions": [
+		{
+			"id": 1,
+			"date": 3
+		}
+	],
+	"accounts": {
+		"FT_shared": 123,
+		"FT_saving": 123,
+		"C1_market": 123,
+		"vaseilio" : 123
+	}
+}
