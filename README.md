@@ -1,6 +1,6 @@
 # JSON IO
 
-A test rust repository for dealing with JSON
+A test Rust repository for dealing with JSON
 
 ## Goals
 - Request, parse, and store data from the command line 
