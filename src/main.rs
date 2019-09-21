@@ -2,77 +2,77 @@ extern crate serde;
 extern crate serde_pickle;
 extern crate chrono;
 
-use std::{fs::File};
-use std::io::{prelude::*, stdin, stdout, Write}
-use serde::{Serialize, Deserialize};
+mod structs;
+
+use std::{path::Path, fs::OpenOptions};
+use std::io::{prelude::*, stdin, stdout, Write};
+use serde::{Serialize, de::DeserializeOwned};
 
 const PICKLE_FILE : &str = "json.pkl";
 
-//
-// Define structs
-//
-#[derive(Serialize, Deserialize, Debug)]
-struct Category  {
-    budgeted: i32,
-    out: i32,
-    balance: i32,
-}
-#[derive(Serialize, Deserialize, Debug)]
-struct Field {
-    name: String,
-    val: i32,
-}
-#[derive(Serialize, Deserialize, Debug)]
-struct Budget {
-    field: Field,
-    cat: Category,
-}
-#[derive(Serialize, Deserialize, Debug)]
-struct Transactions {
-    id    : u128,
-    date  : chrono::Date,
-    payee : String,
-    category: String,
-    outflow: Option<i32>,
-    inflow: Option<i32>,
-    cleared: TransactionStatus,
-}
-enum TransactionStatus {
-    CreditUncleared;
-    CreditCleared;
-    DirectBank;
-}
 
-fn main() {
+fn main()
+{
     println!("Rust JSON interface");
-    let mut input = String::new();
+
+    let mut record = String::new();
+    let mut input  = String::new();
     while input != "exit" {
         input = get_input();
-
-        println!("Got : {}", input);
+        match input.as_str() {
+            "save" => {
+                pickle_json(&record, PICKLE_FILE).expect("Error Pickeling");
+                println!("record saved");
+            },
+            "load" => {
+                record = depickle_json(PICKLE_FILE).expect("Error depickeling");
+                println!("record loaded");
+            },
+            "show" => println!("record: {}", record),
+            _ =>  { record.push_str(","); record.push_str(&input) },
+        }
+        println!("Record: {}", record);
     }
     println!("Exiting");
 }
 
-fn get_input() -> String {
-    print("> ");
-    stdin()
-        .read_line(&mut s)
-        .expect("Error while receiving input")
-        .trim()
-        .to_owned()
+fn get_input() -> String
+{
+    let mut s = String::new();
+    print!("> ");
+    let _ = stdout().flush();
+    stdin().read_line(&mut s).expect("Error while receiving input");
+    s.trim().to_owned()
 }
 
-fn pickle_json(b: &JsonTop, file: &str) -> serde_pickle::Result<()> {
-    let ser = serde_pickle::to_vec(&b, true)?;
-    let mut fp = File::open(file)?;
-    fp.write(&ser)?;
+fn pickle_json<T: Serialize + DeserializeOwned>
+        (b: &T, file: &str) -> serde_pickle::Result<()>
+{
+    let filename = &(String::from("./")+file);
+    let path = Path::new(filename);
+    println!("path is {}", path.display());
+    let ser = serde_pickle::to_vec(&b, true).expect("Pickeling - converting to String");
+    println!("ser is: {:?}", ser);
+    let mut fp = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .open(path)
+        .expect(&format!("Opening file: {}", path.display()));
+    fp.write(&ser).expect("Writing file");
     Ok(())
 }
-fn depickle_json(file: &str) -> serde_pickle::Result<JsonTop> {
-    let mut fp = File::open(file)?;
-    let mut ser = String::new();
-    fp.read_to_string(&mut ser)?;
-    let b: JsonTop = serde_json::from_str(ser.as_str()).unwrap();
-    Ok(b)
+fn depickle_json<T: Serialize + DeserializeOwned>
+        (file: &str) -> Result<T, std::io::Error>
+{
+    let filename = &(String::from("./")+file);
+    let path = Path::new(filename);
+    let mut fp = OpenOptions::new()
+        .read(true)
+        .open(path)
+        .expect(&format!("Opening file: {}", path.display()));
+    let mut ser: Vec<u8> = Vec::new();
+    fp.read_to_end(&mut ser).expect(&format!("Reading from: {}", path.display()));
+    println!("ser is {:?}", ser);
+    let x = serde_pickle::from_slice(&ser).expect("Loading pickled data");
+    Ok(x)
 }
