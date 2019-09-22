@@ -6,6 +6,7 @@ mod structs;
 use std::{path::Path, fs::OpenOptions};
 use std::io::{prelude::*, stdin, stdout, Write};
 use serde::{Serialize, de::DeserializeOwned};
+use chrono;
 
 const PICKLE_FILE : &str = "json.pkl";
 
@@ -36,38 +37,78 @@ fn main()
             },
             "show" => json.print();
             "add" => {
-                let e = get_entry_from_user();
+                let e = get_addition_from_user();
                 if (e.is_some()) {
                     json.add_entry(e.unwrap());
                 }
-            }
+            },
+            "edit" => {
+
+            },
             _ =>  println!("Invalid command: {}", input),
         }
     }
     println!("Exiting");
 }
 
-fn get_entry_from_user() -> Option<EntryType>
+fn get_addition_from_user() -> Option<EntryType>
 {
     print!(r#"What would you like to do?
         1) Add Transaction (default)
         2) Add Budget Category
-        3) Edit Transaction
-        4) Edit Budget Category
 
         Enter one of the numbers above: "#);
     match get_user_input() {
-        "1" | "" =>
+        "1" | "" => get_transaction_from_user(),
         "2" => {println!("TODO: add budget category"); None},
-        "3" => {println!("TODO: edit transaction"); None},
-        "4" => {println!("TODO: edit budget category"); None},
         _   => {println!("Error.  Please only provide one of the options shown."); None},
     }
 }
 
-fn get_user_input() -> String
+fn get_transaction_from_user() -> Option<EntryType>
+{
+    let mod t = Transaction{};
+    t.id = 0;
+
+    let mut input: String;
+    // Get Date
+    input = get_user_input("Date: ");
+    let mut split = input.split();
+    t.date.day   = split.next();
+    t.date.month = split.next();
+    t.date.year  = split.next();
+
+    // Get payee
+    t.payee = get_user_input("Payee: ");
+    t.category = get_user_input("Category: ");
+    input = get_user_input("Outflow (blank for none): ");
+    outflow : Option<i32>,
+    input = get_user_input("Inflow (blank for none): ");
+    inflow  : Option<i32>,
+    input = get_user_input("Cleared status (0-2): ");
+    cleared : TransactionStatus,
+}
+
+fn get_edit_from_user() -> Option<EntryType>
+{
+    print!(r#"What would you like to do?
+        1) Edit Transaction
+        2) Edit Budget Category
+
+        Enter one of the numbers above: "#);
+    match get_user_input() {
+        "1" => {println!("TODO: edit transaction"); None},
+        "2" => {println!("TODO: edit budget category"); None},
+        _   => {println!("Error.  Please only provide one of the options shown."); None},
+    }
+}
+
+fn get_user_input(s: Option<&str>) -> String
 {
     let mut s = String::new();
+    if (s.is_some()) {
+
+    }
     let _ = stdout().flush();
     stdin().read_line(&mut s).expect("Error while receiving input");
     s.trim().to_owned()
