@@ -26,45 +26,45 @@ struct Budget {
     month: Vec<Month>,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct JsonTop {
+pub struct JsonTop {
     transactions: Vec<Transaction>,
     budget      : Budget,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct Transaction {
-    id      : u128,
-    date    : MyDate,
-    payee   : String,
-    category: String,
-    outflow : Option<i32>,
-    inflow  : Option<i32>,
-    cleared : TransactionStatus,
+pub struct Transaction {
+    pub id      : u128,
+    pub date    : MyDate,
+    pub payee   : String,
+    pub category: String,
+    pub outflow : Option<i32>,
+    pub inflow  : Option<i32>,
+    pub cleared : TransactionStatus,
 }
 #[derive(Serialize, Deserialize, Debug)]
-enum TransactionStatus {
+pub enum TransactionStatus {
     CreditUncleared,
     CreditCleared,
     DirectBank,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct MyDate {
-    year : u32,
-    month: u8,
-    day  : u8,
+pub struct MyDate {
+    pub year : u16,
+    pub month: u8,
+    pub day  : u8,
 }
 
-enum EntryType {
+pub enum EntryType {
     Transaction(Transaction),
     Budget,
 }
 
 impl JsonTop {
-    fn add_entry(&mut self, e: EntryType)
+    pub fn add_entry(&mut self, e: EntryType)
     {
 
     }
 
-    fn print(&self)
+    pub fn print(&self)
     {
         println!("TODO: print json structure");
     }

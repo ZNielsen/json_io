@@ -6,7 +6,8 @@ mod structs;
 use std::{path::Path, fs::OpenOptions};
 use std::io::{prelude::*, stdin, stdout, Write};
 use serde::{Serialize, de::DeserializeOwned};
-use chrono;
+// use chrono;
+use crate::structs::{EntryType, Transaction, JsonTop};
 
 const PICKLE_FILE : &str = "json.pkl";
 
@@ -15,11 +16,11 @@ fn main()
 {
     println!("Rust JSON interface");
 
-    let mut json  = JsonTop::new();
+    let mut json: JsonTop = depickle_json(PICKLE_FILE).expect("Error depickling");
     let mut input = String::new();
     while input != "exit" {
         print!("> ");
-        input = get_user_input();
+        input = get_user_input(None);
         match input.as_str() {
             "save" => {
                 pickle_json(&json, PICKLE_FILE).expect("Error Pickling");
@@ -27,7 +28,7 @@ fn main()
             },
             "load" => {
                 print!("Loading: Are you sure?  Existing JSON will be overwritten? (y/N): ");
-                if get_user_input().as_str().to_uppercase() == "Y" {
+                if get_user_input(None).as_str().to_uppercase() == "Y" {
                     json = depickle_json(PICKLE_FILE).expect("Error depickling");
                     println!("JSON loaded from {}", PICKLE_FILE);
                 }
@@ -35,10 +36,10 @@ fn main()
                     println!("Canceled");
                 }
             },
-            "show" => json.print();
+            "show" => json.print(),
             "add" => {
                 let e = get_addition_from_user();
-                if (e.is_some()) {
+                if e.is_some() {
                     json.add_entry(e.unwrap());
                 }
             },
@@ -58,7 +59,7 @@ fn get_addition_from_user() -> Option<EntryType>
         2) Add Budget Category
 
         Enter one of the numbers above: "#);
-    match get_user_input() {
+    match get_user_input(None).as_str() {
         "1" | "" => get_transaction_from_user(),
         "2" => {println!("TODO: add budget category"); None},
         _   => {println!("Error.  Please only provide one of the options shown."); None},
@@ -67,26 +68,50 @@ fn get_addition_from_user() -> Option<EntryType>
 
 fn get_transaction_from_user() -> Option<EntryType>
 {
-    let mod t = Transaction{};
-    t.id = 0;
+    let id = 0;
 
     let mut input: String;
     // Get Date
-    input = get_user_input("Date: ");
-    let mut split = input.split();
-    t.date.day   = split.next();
-    t.date.month = split.next();
-    t.date.year  = split.next();
+    input = get_user_input(Some("Date: "));
+    let mut split = input.split("/");
+    let day   = u8 ::from_str_radix(split.next().unwrap(), 10).unwrap();
+    let month = u8 ::from_str_radix(split.next().unwrap(), 10).unwrap();
+    let year  = u16::from_str_radix(split.next().unwrap(), 10).unwrap();
+    let date  = structs::MyDate{ day, month, year };
 
-    // Get payee
-    t.payee = get_user_input("Payee: ");
-    t.category = get_user_input("Category: ");
-    input = get_user_input("Outflow (blank for none): ");
-    outflow : Option<i32>,
-    input = get_user_input("Inflow (blank for none): ");
-    inflow  : Option<i32>,
-    input = get_user_input("Cleared status (0-2): ");
-    cleared : TransactionStatus,
+    let payee = get_user_input(Some("Payee: "));
+
+    let category = get_user_input(Some("Category: "));
+    input = get_user_input(Some("Outflow (blank for none): "));
+
+    let outflow = Some(i32::from_str_radix(&input, 10).unwrap());
+    input = get_user_input(Some("Inflow (blank for none): "));
+
+    let inflow = Some(i32::from_str_radix(&input, 10).unwrap());
+    input = get_user_input(Some(r#"
+        0) Credit card: Uncleared
+        1) Credit card: Cleared
+        2) Debit
+        Cleared status (0-2): "#));
+
+    let cleared = match input.as_str() {
+        "0" => structs::TransactionStatus::CreditUncleared,
+        "1" => structs::TransactionStatus::CreditCleared,
+        "2" => structs::TransactionStatus::DirectBank,
+        _   => structs::TransactionStatus::DirectBank,
+    };
+
+    let t = Transaction {
+        id,
+        date,
+        payee,
+        category,
+        outflow,
+        inflow,
+        cleared
+    };
+
+    Some(EntryType::Transaction(t))
 }
 
 fn get_edit_from_user() -> Option<EntryType>
@@ -96,18 +121,18 @@ fn get_edit_from_user() -> Option<EntryType>
         2) Edit Budget Category
 
         Enter one of the numbers above: "#);
-    match get_user_input() {
+    match get_user_input(None).as_str() {
         "1" => {println!("TODO: edit transaction"); None},
         "2" => {println!("TODO: edit budget category"); None},
         _   => {println!("Error.  Please only provide one of the options shown."); None},
     }
 }
 
-fn get_user_input(s: Option<&str>) -> String
+fn get_user_input(out: Option<&str>) -> String
 {
     let mut s = String::new();
-    if (s.is_some()) {
-
+    if out.is_some() {
+        print!("{}", out.unwrap());
     }
     let _ = stdout().flush();
     stdin().read_line(&mut s).expect("Error while receiving input");
