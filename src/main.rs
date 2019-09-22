@@ -19,18 +19,21 @@ fn main()
     let mut record = String::new();
     let mut input  = String::new();
     while input != "exit" {
-        input = get_input();
+        input = get_user_input();
         match input.as_str() {
             "save" => {
-                pickle_json(&record, PICKLE_FILE).expect("Error Pickeling");
+                pickle_json(&record, PICKLE_FILE).expect("Error Pickling");
                 println!("record saved");
             },
             "load" => {
-                record = depickle_json(PICKLE_FILE).expect("Error depickeling");
+                record = depickle_json(PICKLE_FILE).expect("Error depickling");
                 println!("record loaded");
             },
             "show" => println!("record: {}", record),
-            "add" => json.add_entry();
+            "add" => {
+                let e = get_entry_from_user();
+                json.add_entry(e);
+            }
             _ =>  println!("Invalid command: {}", input),
         }
         println!("Record: {}", record);
@@ -38,7 +41,21 @@ fn main()
     println!("Exiting");
 }
 
-fn get_input() -> String
+fn get_entry_from_user() ->
+{
+    println!(r#"What would you like to do?
+        1) Add Transaction (default)
+        2) Add Budget Category
+        3) Edit Transaction
+        4) Edit Budget Category
+
+        Enter one of the numbers above:
+        "#);
+    let input = get_user_input();
+
+}
+
+fn get_user_input() -> String
 {
     let mut s = String::new();
     print!("> ");
@@ -53,7 +70,7 @@ fn pickle_json<T: Serialize + DeserializeOwned>
     let filename = &(String::from("./")+file);
     let path = Path::new(filename);
     println!("path is {}", path.display());
-    let ser = serde_pickle::to_vec(&b, true).expect("Pickeling - converting to String");
+    let ser = serde_pickle::to_vec(&b, true).expect("Pickling - converting to String");
     println!("ser is: {:?}", ser);
     let mut fp = OpenOptions::new()
         .create(true)
