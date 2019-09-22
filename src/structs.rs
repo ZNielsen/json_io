@@ -27,11 +27,11 @@ struct Budget {
 }
 #[derive(Serialize, Deserialize, Debug)]
 struct JsonTop {
-    transactions: Vec<Transactions>,
+    transactions: Vec<Transaction>,
     budget      : Budget,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct Transactions {
+struct Transaction {
     id      : u128,
     date    : MyDate,
     payee   : String,
@@ -51,4 +51,21 @@ struct MyDate {
     year : u32,
     month: u8,
     day  : u8,
+}
+
+enum EntryType {
+    Transaction(Transaction),
+    Budget,
+}
+
+impl JsonTop {
+    fn add_entry(&mut self, e: EntryType)
+    {
+
+    }
+
+    fn print(&self)
+    {
+        println!("TODO: print json structure");
+    }
 }

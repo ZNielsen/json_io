@@ -1,6 +1,5 @@
 extern crate serde;
 extern crate serde_pickle;
-extern crate chrono;
 
 mod structs;
 
@@ -15,50 +14,60 @@ fn main()
 {
     println!("Rust JSON interface");
 
-    let mut json = JsonTop::new();
-    let mut record = String::new();
-    let mut input  = String::new();
+    let mut json  = JsonTop::new();
+    let mut input = String::new();
     while input != "exit" {
+        print!("> ");
         input = get_user_input();
         match input.as_str() {
             "save" => {
-                pickle_json(&record, PICKLE_FILE).expect("Error Pickling");
-                println!("record saved");
+                pickle_json(&json, PICKLE_FILE).expect("Error Pickling");
+                println!("JSON saved to {}", PICKLE_FILE);
             },
             "load" => {
-                record = depickle_json(PICKLE_FILE).expect("Error depickling");
-                println!("record loaded");
+                print!("Loading: Are you sure?  Existing JSON will be overwritten? (y/N): ");
+                if get_user_input().as_str().to_uppercase() == "Y" {
+                    json = depickle_json(PICKLE_FILE).expect("Error depickling");
+                    println!("JSON loaded from {}", PICKLE_FILE);
+                }
+                else {
+                    println!("Canceled");
+                }
             },
-            "show" => println!("record: {}", record),
+            "show" => json.print();
             "add" => {
                 let e = get_entry_from_user();
-                json.add_entry(e);
+                if (e.is_some()) {
+                    json.add_entry(e.unwrap());
+                }
             }
             _ =>  println!("Invalid command: {}", input),
         }
-        println!("Record: {}", record);
     }
     println!("Exiting");
 }
 
-fn get_entry_from_user() ->
+fn get_entry_from_user() -> Option<EntryType>
 {
-    println!(r#"What would you like to do?
+    print!(r#"What would you like to do?
         1) Add Transaction (default)
         2) Add Budget Category
         3) Edit Transaction
         4) Edit Budget Category
 
-        Enter one of the numbers above:
-        "#);
-    let input = get_user_input();
-
+        Enter one of the numbers above: "#);
+    match get_user_input() {
+        "1" | "" =>
+        "2" => {println!("TODO: add budget category"); None},
+        "3" => {println!("TODO: edit transaction"); None},
+        "4" => {println!("TODO: edit budget category"); None},
+        _   => {println!("Error.  Please only provide one of the options shown."); None},
+    }
 }
 
 fn get_user_input() -> String
 {
     let mut s = String::new();
-    print!("> ");
     let _ = stdout().flush();
     stdin().read_line(&mut s).expect("Error while receiving input");
     s.trim().to_owned()
