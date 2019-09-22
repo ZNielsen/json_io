@@ -15,6 +15,7 @@ fn main()
 {
     println!("Rust JSON interface");
 
+    let mut json = JsonTop::new();
     let mut record = String::new();
     let mut input  = String::new();
     while input != "exit" {
@@ -29,7 +30,8 @@ fn main()
                 println!("record loaded");
             },
             "show" => println!("record: {}", record),
-            _ =>  { record.push_str(","); record.push_str(&input) },
+            "add" => json.add_entry();
+            _ =>  println!("Invalid command: {}", input),
         }
         println!("Record: {}", record);
     }

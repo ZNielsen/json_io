@@ -27,7 +27,7 @@ struct Budget {
 }
 #[derive(Serialize, Deserialize, Debug)]
 struct JsonTop {
-    transactions: Transactions,
+    transactions: Vec<Transactions>,
     budget      : Budget,
 }
 #[derive(Serialize, Deserialize, Debug)]
