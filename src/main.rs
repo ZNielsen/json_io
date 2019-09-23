@@ -16,14 +16,14 @@ fn main()
 {
     println!("Rust JSON interface");
 
-    let mut json: JsonTop = depickle_json(PICKLE_FILE).expect("Error depickling");
+    let mut json: JsonTop = init_json();// = depickle_json(PICKLE_FILE).expect("Error depickling");
     let mut input = String::new();
     while input != "exit" {
         print!("> ");
         input = get_user_input(None);
         match input.as_str() {
             "save" => {
-                pickle_json(&json, PICKLE_FILE).expect("Error Pickling");
+                pickle_json(&json, PICKLE_FILE);
                 println!("JSON saved to {}", PICKLE_FILE);
             },
             "load" => {
@@ -44,7 +44,13 @@ fn main()
                 }
             },
             "edit" => {
-
+                // TODO: edit existing json object
+            },
+            "new" => {
+                // TODO: Create new json
+                let b = structs::Budget{ month: Vec::new() };
+                let t: Vec<Transaction> = Vec::new();
+                json = JsonTop{ transactions: t, budget: Some(b) };
             },
             _ =>  println!("Invalid command: {}", input),
         }

@@ -18,17 +18,17 @@ struct Field {
     val : i32,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct Month {
+pub struct Month {
     entry: Vec<Category>,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct Budget {
-    month: Vec<Month>,
+pub struct Budget {
+    pub month: Vec<Month>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JsonTop {
-    transactions: Vec<Transaction>,
-    budget      : Budget,
+    pub transactions: Vec<Transaction>,
+    pub budget      : Option<Budget>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Transaction {
@@ -67,5 +67,11 @@ impl JsonTop {
     pub fn print(&self)
     {
         println!("TODO: print json structure");
+    }
+
+    pub fn new(file: &str) -> JsonTop
+    {
+        // Check if file exists.  Load it
+        // Else, create empty data for JsonTop
     }
 }
