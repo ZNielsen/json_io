@@ -16,7 +16,7 @@ fn main()
 {
     println!("Rust JSON interface");
 
-    let mut json: JsonTop = init_json();// = depickle_json(PICKLE_FILE).expect("Error depickling");
+    let mut json: JsonTop = JsonTop::new();
     let mut input = String::new();
     while input != "exit" {
         print!("> ");
@@ -47,7 +47,6 @@ fn main()
                 // TODO: edit existing json object
             },
             "new" => {
-                // TODO: Create new json
                 let b = structs::Budget{ month: Vec::new() };
                 let t: Vec<Transaction> = Vec::new();
                 json = JsonTop{ transactions: t, budget: Some(b) };
