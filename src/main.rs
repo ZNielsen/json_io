@@ -145,10 +145,8 @@ fn get_user_input(out: Option<&str>) -> String
 }
 
 fn pickle_json<T: Serialize + DeserializeOwned>
-        (b: &T, file: &str) -> serde_pickle::Result<()>
+        (b: &T, path: std::path::Path) -> serde_pickle::Result<()>
 {
-    let filename = &(String::from("./")+file);
-    let path = Path::new(filename);
     println!("path is {}", path.display());
     let ser = serde_pickle::to_vec(&b, true).expect("Pickling - converting to String");
     println!("ser is: {:?}", ser);

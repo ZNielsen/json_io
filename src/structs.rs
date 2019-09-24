@@ -74,7 +74,14 @@ impl JsonTop {
         // Check if file exists.  Load it
         let filename = &(String::from("./")+file);
         let path = Path::new(filename);
-        depickle_json(PICKLE_FILE).expect("Error depickling")
+        if path.exists() {
+            depickle_json(path).expect("Error depickling")
+        }
         // Else, create empty data for JsonTop
+        else {
+            let transactions: Vec<Trasation> = Vec::new();
+            let budget: Option<Budget> = None;
+            let j: JsonTop = { transactions, budget }
+        }
     }
 }
