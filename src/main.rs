@@ -1,36 +1,58 @@
-extern crate serde;
-extern crate serde_pickle;
+////////////////////////////////////////////////////////////////////////////////
+//  Module:   main.rs
+//
+//  © Zach Nielsen
+//  [description]
+////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+//  Included Modules
+////////////////////////////////////////////////////////////////////////////////
 mod structs;
+// extern crate serde;
 
-use std::{path::Path, fs::OpenOptions};
+////////////////////////////////////////////////////////////////////////////////
+//  Namespaces
+////////////////////////////////////////////////////////////////////////////////
+use std::{path::Path};
 use std::io::{prelude::*, stdin, stdout, Write};
-use serde::{Serialize, de::DeserializeOwned};
-// use chrono;
 use crate::structs::{EntryType, Transaction, JsonTop};
+use crate::structs::pickle_fns::{pickle_json, depickle_json};
+// use chrono;
 
-const PICKLE_FILE : &str = "json.pkl";
+////////////////////////////////////////////////////////////////////////////////
+//  CODE
+////////////////////////////////////////////////////////////////////////////////
+const PICKLE_FILE : &str = "./json.pkl";
 
-
+////////////////////////////////////////////////////////////////////////////////
+ // NAME:   main
+ //
+ // NOTES:
+ // ARGS:
+ // RETURN:
+ //
 fn main()
 {
     println!("Rust JSON interface");
 
-    let mut json: JsonTop = JsonTop::new();
+    let path = Path::new(PICKLE_FILE);
+
+    let mut json: JsonTop = JsonTop::new(None);
     let mut input = String::new();
     while input != "exit" {
         print!("> ");
         input = get_user_input(None);
         match input.as_str() {
             "save" => {
-                pickle_json(&json, PICKLE_FILE);
-                println!("JSON saved to {}", PICKLE_FILE);
+                pickle_json(&json, path);
+                println!("JSON saved to {}", path.display());
             },
             "load" => {
                 print!("Loading: Are you sure?  Existing JSON will be overwritten? (y/N): ");
                 if get_user_input(None).as_str().to_uppercase() == "Y" {
-                    json = depickle_json(PICKLE_FILE).expect("Error depickling");
-                    println!("JSON loaded from {}", PICKLE_FILE);
+                    json = depickle_json(path).expect("Error depickling");
+                    println!("JSON loaded from {}", path.display());
                 }
                 else {
                     println!("Canceled");
@@ -57,6 +79,13 @@ fn main()
     println!("Exiting");
 }
 
+////////////////////////////////////////////////////////////////////////////////
+ // NAME:   get_addition_from_user
+ //
+ // NOTES:
+ // ARGS:
+ // RETURN:
+ //
 fn get_addition_from_user() -> Option<EntryType>
 {
     print!(r#"What would you like to do?
@@ -71,6 +100,13 @@ fn get_addition_from_user() -> Option<EntryType>
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+ // NAME:   get_transaction_from_user
+ //
+ // NOTES:
+ // ARGS:
+ // RETURN:
+ //
 fn get_transaction_from_user() -> Option<EntryType>
 {
     let id = 0;
@@ -119,6 +155,13 @@ fn get_transaction_from_user() -> Option<EntryType>
     Some(EntryType::Transaction(t))
 }
 
+////////////////////////////////////////////////////////////////////////////////
+ // NAME:   get_edit_from_user
+ //
+ // NOTES:
+ // ARGS:
+ // RETURN:
+ //
 fn get_edit_from_user() -> Option<EntryType>
 {
     print!(r#"What would you like to do?
@@ -133,6 +176,13 @@ fn get_edit_from_user() -> Option<EntryType>
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+ // NAME:   get_user_input
+ //
+ // NOTES:
+ // ARGS:
+ // RETURN:
+ //
 fn get_user_input(out: Option<&str>) -> String
 {
     let mut s = String::new();
@@ -144,32 +194,3 @@ fn get_user_input(out: Option<&str>) -> String
     s.trim().to_owned()
 }
 
-fn pickle_json<T: Serialize + DeserializeOwned>
-        (b: &T, path: std::path::Path) -> serde_pickle::Result<()>
-{
-    println!("path is {}", path.display());
-    let ser = serde_pickle::to_vec(&b, true).expect("Pickling - converting to String");
-    println!("ser is: {:?}", ser);
-    let mut fp = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .open(path)
-        .expect(&format!("Opening file: {}", path.display()));
-    fp.write(&ser).expect("Writing file");
-    Ok(())
-}
-fn depickle_json<T: Serialize + DeserializeOwned>
-        (file: &str) -> Result<T, std::io::Error>
-{
-    let filename = &(String::from("./")+file);
-    let path = Path::new(filename);
-    let mut fp = OpenOptions::new()
-        .read(true)
-        .open(path)
-        .expect(&format!("Opening file: {}", path.display()));
-    let mut ser: Vec<u8> = Vec::new();
-    fp.read_to_end(&mut ser).expect(&format!("Reading from: {}", path.display()));
-    println!("ser is {:?}", ser);
-    let x = serde_pickle::from_slice(&ser).expect("Loading pickled data");
-    Ok(x)
-}
